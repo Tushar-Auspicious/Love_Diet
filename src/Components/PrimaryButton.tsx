@@ -51,7 +51,7 @@ const styles = StyleSheet.create({
   button: {
     paddingVertical: verticalScale(12),
     paddingHorizontal: horizontalScale(20),
-    borderRadius: verticalScale(20),
+    borderRadius: 100,
     alignItems: "center",
     justifyContent: "center",
     marginVertical: verticalScale(5),

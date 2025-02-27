@@ -39,7 +39,11 @@ const Welcome: FC<WelcomeScreenProps> = ({ navigation }) => {
         />
       </View>
       <View style={styles.buttonContainer}>
-        <PrimaryButton title="Continue" onPress={handleContinue} isFullWidth />
+        <PrimaryButton
+          title="Create Account"
+          onPress={handleContinue}
+          isFullWidth
+        />
         <PrimaryButton
           title="Log In"
           onPress={handleLogin}

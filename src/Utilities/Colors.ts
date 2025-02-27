@@ -25,6 +25,7 @@ const COLORS = {
   // Black & White
   Black: "#121212", // Pure Black
   White: "#FFFFFF", // Pure White
+  DarkBlue: "#002060",
 };
 
 export default COLORS;

@@ -6,6 +6,12 @@ import Slide3 from "./slide3.svg";
 import Slide4 from "./slide4.svg";
 import Slide5 from "./slide5.svg";
 import UnLockFeature from "./unlockFeature.svg";
+import RedbackArrow from "./modules.svg";
+import RedUploadIcon from "./redUploadIcon.svg";
+import RedDeleteIcon from "./redDeleteIcon.svg";
+import UpArrowIcon from "./UpArrow.svg";
+import DownArrowIcon from "./downArrow.svg";
+import SearchIcon from "./Search.svg";
 
 const ICONS = {
   Slide1,
@@ -16,6 +22,12 @@ const ICONS = {
   LovedHeartLogo,
   GreenOk,
   UnLockFeature,
+  RedbackArrow,
+  RedUploadIcon,
+  RedDeleteIcon,
+  UpArrowIcon,
+  DownArrowIcon,
+  SearchIcon,
 };
 
 export default ICONS;

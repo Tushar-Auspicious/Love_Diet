@@ -1,15 +1,15 @@
 import React, { FC, useState } from "react";
 import {
-    FlatList,
-    Image,
-    ScrollView,
-    StyleSheet,
-    TouchableOpacity,
-    View
+  FlatList,
+  Image,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import {
-    SafeAreaView,
-    useSafeAreaInsets,
+  SafeAreaView,
+  useSafeAreaInsets,
 } from "react-native-safe-area-context";
 import StarRating from "react-native-star-rating-widget";
 import FONTS from "../../Assets/fonts";
@@ -19,24 +19,33 @@ import CustomIcon from "../../Components/CustomIcon";
 import { CustomText } from "../../Components/CustomText";
 import PrimaryButton from "../../Components/PrimaryButton";
 import {
-    planLit,
-    PlanReviews,
-    topList,
-    UnlockFeatures,
+  planLit,
+  PlanReviews,
+  topList,
+  UnlockFeatures,
 } from "../../Seeds/OnBoardingPlansSeed";
 import { OnBoardingPlansScreenProps } from "../../Typings/route";
 import COLORS from "../../Utilities/Colors";
 import {
-    horizontalScale,
-    hp,
-    verticalScale,
-    wp,
+  horizontalScale,
+  hp,
+  verticalScale,
+  wp,
 } from "../../Utilities/Metrics";
 
 const OnBoardingPlans: FC<OnBoardingPlansScreenProps> = ({ navigation }) => {
   const insets = useSafeAreaInsets();
+  const [activeIndex, setActiveIndex] = useState(0);
+  const handleScroll = (event: any) => {
+    const contentOffsetX = event.nativeEvent.contentOffset.x;
+    const index = Math.round(contentOffsetX / wp(90)); // Adjust width based on item size
+    setActiveIndex(index);
+  };
 
-  const [isFreeWeekPlanselected, setIsFreeWeekPlanselected] = useState(false);
+  // State to track the selected plan (null, plan index, or "free" for free trial)
+  const [selectedPlan, setSelectedPlan] = useState<number | "free" | null>(
+    null
+  );
 
   const renderTopFeatureList = () => {
     return (
@@ -61,10 +70,14 @@ const OnBoardingPlans: FC<OnBoardingPlansScreenProps> = ({ navigation }) => {
         </CustomText>
         <View style={styles.planColumnWrapper}>
           {planLit.map((item, index) => (
-            <View
+            <TouchableOpacity
+              key={index}
+              activeOpacity={0.8}
+              onPress={() => setSelectedPlan(index)}
               style={[
                 styles.planCard,
-                { top: index === 1 ? -10 : 0 }, // Adjusting position for center plan
+                { top: index === 1 ? -10 : 0 },
+                selectedPlan === index && styles.selectedPlanBorder, // Blue border for selected plan
               ]}
             >
               {index === 1 && (
@@ -95,26 +108,18 @@ const OnBoardingPlans: FC<OnBoardingPlansScreenProps> = ({ navigation }) => {
                   {item.discountedPrice}
                 </CustomText>
               </View>
-            </View>
+            </TouchableOpacity>
           ))}
         </View>
         <TouchableOpacity
           activeOpacity={0.8}
-          onPress={() => setIsFreeWeekPlanselected(!isFreeWeekPlanselected)}
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "center",
-            borderWidth: 3,
-            borderRadius: 8,
-            paddingVertical: verticalScale(5),
-            gap: horizontalScale(10),
-            borderColor: isFreeWeekPlanselected
-              ? COLORS.White
-              : COLORS.Red[300],
-          }}
+          onPress={() => setSelectedPlan("free")}
+          style={[
+            styles.freeTrialButton,
+            selectedPlan === "free" && styles.selectedPlanBorder, // Blue border for free trial
+          ]}
         >
-          {isFreeWeekPlanselected && (
+          {selectedPlan === "free" && (
             <CustomIcon Icon={ICONS.GreenOk} height={24} width={24} />
           )}
           <CustomText
@@ -138,29 +143,19 @@ const OnBoardingPlans: FC<OnBoardingPlansScreenProps> = ({ navigation }) => {
         <FlatList
           data={PlanReviews}
           horizontal
+          pagingEnabled
+          snapToAlignment="center"
+          snapToInterval={wp(90) + horizontalScale(10)} // Ensure spacing between slides
+          decelerationRate="fast"
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{
-            columnGap: horizontalScale(10),
-          }}
-          renderItem={({ item, index }) => (
-            <View
-              style={{
-                backgroundColor: "#C3032D",
-                paddingVertical: verticalScale(12),
-                paddingHorizontal: horizontalScale(12),
-                width: wp(80),
-                gap: verticalScale(20),
-                justifyContent: "space-between",
-                borderRadius: 8,
-              }}
-            >
+          renderItem={({ item }) => (
+            <View style={styles.reviewCard}>
               <CustomText variant="sSemiBold" color={COLORS.White}>
                 {item.title}
               </CustomText>
               <CustomText variant="xsRegular" color={COLORS.White}>
                 {item.review}
               </CustomText>
-
               <View>
                 <CustomText
                   style={{ fontFamily: FONTS.italic }}
@@ -177,17 +172,40 @@ const OnBoardingPlans: FC<OnBoardingPlansScreenProps> = ({ navigation }) => {
               </View>
             </View>
           )}
+          onScroll={handleScroll}
+          scrollEventThrottle={16}
         />
+        {/* Pagination Dots */}
+        <View style={styles.paginationContainer}>
+          {PlanReviews.map((_, index) => (
+            <View
+              key={index}
+              style={[
+                styles.dot,
+                {
+                  backgroundColor:
+                    index === activeIndex ? COLORS.DarkBlue : COLORS.White,
+                },
+              ]}
+            />
+          ))}
+        </View>
       </View>
     );
   };
 
-  const renderUnlockFearures = () => {
+  const renderUnlockFeatures = () => {
     return (
       <View style={styles.unlockFeaturesContainer}>
-        <CustomText variant="xlSemiBold" color={COLORS.White}>
+        <CustomText
+          variant="xlSemiBold"
+          color={COLORS.White}
+          style={{ alignSelf: "flex-start" }}
+        >
           Unlock Features
         </CustomText>
+
+        <CustomIcon Icon={ICONS.UnLockFeature} height={hp(16)} width={wp(90)} />
         <View style={styles.topFeatureList}>
           {UnlockFeatures.map((item, index) => (
             <View key={item + index.toString()} style={styles.featureItem}>
@@ -208,7 +226,7 @@ const OnBoardingPlans: FC<OnBoardingPlansScreenProps> = ({ navigation }) => {
         <PrimaryButton
           title="Continue"
           onPress={() => navigation.navigate("signUp")}
-          disabled={!isFreeWeekPlanselected}
+          disabled={selectedPlan === null} // Enable only if a plan is selected
           backgroundColor={COLORS.White}
           textColor={COLORS.Red[500]}
         />
@@ -256,7 +274,7 @@ const OnBoardingPlans: FC<OnBoardingPlansScreenProps> = ({ navigation }) => {
           {renderTopFeatureList()}
           {renderPlans()}
           {renderReviews()}
-          {renderUnlockFearures()}
+          {renderUnlockFeatures()}
           {renderPlans()}
           {renderFooter()}
         </SafeAreaView>
@@ -291,9 +309,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: horizontalScale(8),
   },
-  planContainer: {
-    width: wp(91.5),
-  },
   planColumnWrapper: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -310,9 +325,14 @@ const styles = StyleSheet.create({
     paddingVertical: verticalScale(10),
     borderRadius: 10,
     height: hp(22),
+    borderWidth: 3,
+    borderColor: COLORS.White, // Default border
+  },
+  selectedPlanBorder: {
+    borderColor: COLORS.DarkBlue, // Blue border when selected
   },
   popularBadge: {
-    backgroundColor: "#002060",
+    backgroundColor: COLORS.DarkBlue,
     width: "90%",
     justifyContent: "center",
     borderRadius: 8,
@@ -329,13 +349,34 @@ const styles = StyleSheet.create({
   strikethroughPrice: {
     textDecorationLine: "line-through",
   },
+  freeTrialButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 3,
+    borderRadius: 8,
+    paddingVertical: verticalScale(5),
+    gap: horizontalScale(10),
+    borderColor: "transparent", // Default border
+  },
   reviewsContainer: {
     width: wp(91.5),
     gap: verticalScale(10),
   },
+  reviewCard: {
+    backgroundColor: "#C3032D",
+    paddingVertical: verticalScale(12),
+    paddingHorizontal: horizontalScale(12),
+    width: wp(91.5),
+    gap: verticalScale(20),
+    justifyContent: "space-between",
+    borderRadius: 8,
+    marginHorizontal: horizontalScale(5),
+  },
   unlockFeaturesContainer: {
     width: wp(91.5),
-    gap: verticalScale(10),
+    gap: verticalScale(20),
+    alignItems: "center",
   },
   footer: {
     gap: verticalScale(20),
@@ -345,5 +386,17 @@ const styles = StyleSheet.create({
   loginLink: {
     flexDirection: "row",
     justifyContent: "center",
+  },
+
+  paginationContainer: {
+    flexDirection: "row",
+    alignSelf: "center",
+    marginTop: verticalScale(10),
+  },
+  dot: {
+    width: horizontalScale(8),
+    height: horizontalScale(8),
+    borderRadius: 4,
+    marginHorizontal: horizontalScale(4),
   },
 });

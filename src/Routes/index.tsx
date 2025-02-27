@@ -1,8 +1,10 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import React from "react";
+import Login from "../Screens/Login";
 import OnBoarding from "../Screens/OnBoarding";
 import OnBoardingPlans from "../Screens/OnBoardingPlans";
+import SignUp from "../Screens/SignUp";
 import Welcome from "../Screens/Welcome";
 import {
   AuthStackParams,
@@ -10,8 +12,6 @@ import {
   MainStackParams,
   RootStackParams,
 } from "../Typings/route";
-import Login from "../Screens/Login";
-import SignUp from "../Screens/SignUp";
 
 const RootStack = createNativeStackNavigator<RootStackParams>();
 const Auth = createNativeStackNavigator<AuthStackParams>();
@@ -29,8 +29,8 @@ const Routing = () => {
         <Auth.Screen name="welcome" component={Welcome} />
         <Auth.Screen name="onBoarding" component={OnBoarding} />
         <Auth.Screen name="onBoardingPlans" component={OnBoardingPlans} />
-        <Auth.Screen name="logIn" component={Login} />
         <Auth.Screen name="signUp" component={SignUp} />
+        <Auth.Screen name="logIn" component={Login} />
         {/* <Auth.Screen name="forgotPassword" component={StartExploring} />
         <Auth.Screen name="verifyPhoneNumber" component={StartExploring} />
         <Auth.Screen name="createPassword" component={StartExploring} /> */}

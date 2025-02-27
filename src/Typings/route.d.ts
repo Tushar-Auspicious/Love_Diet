@@ -44,7 +44,7 @@ export type OnBoardingPlansScreenProps = NativeStackScreenProps<
   "onBoardingPlans"
 >;
 export type LoginScreenProps = NativeStackScreenProps<
-  AuthStackParams & RootStackParams ,
+  AuthStackParams & RootStackParams & BottomTabParams,
   "logIn"
 >;
 export type SignUpScreenProps = NativeStackScreenProps<
