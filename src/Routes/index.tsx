@@ -31,9 +31,6 @@ const Routing = () => {
         <Auth.Screen name="onBoardingPlans" component={OnBoardingPlans} />
         <Auth.Screen name="signUp" component={SignUp} />
         <Auth.Screen name="logIn" component={Login} />
-        {/* <Auth.Screen name="forgotPassword" component={StartExploring} />
-        <Auth.Screen name="verifyPhoneNumber" component={StartExploring} />
-        <Auth.Screen name="createPassword" component={StartExploring} /> */}
       </Auth.Navigator>
     );
   }

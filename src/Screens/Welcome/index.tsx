@@ -1,14 +1,15 @@
 import React, { FC } from "react";
-import { Image, StyleSheet, View } from "react-native";
+import { Image, View } from "react-native";
 import {
   SafeAreaView,
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
 import IMAGES from "../../Assets/Images";
 import PrimaryButton from "../../Components/PrimaryButton";
-import COLORS from "../../Utilities/Colors";
-import { hp, isAndroid, verticalScale } from "../../Utilities/Metrics";
 import { WelcomeScreenProps } from "../../Typings/route";
+import COLORS from "../../Utilities/Colors";
+import { verticalScale } from "../../Utilities/Metrics";
+import styles from "./styles";
 
 const Welcome: FC<WelcomeScreenProps> = ({ navigation }) => {
   const insets = useSafeAreaInsets();
@@ -58,24 +59,3 @@ const Welcome: FC<WelcomeScreenProps> = ({ navigation }) => {
 };
 
 export default Welcome;
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.White,
-    justifyContent: "center",
-  },
-  logoContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  image: {
-    height: hp(45),
-  },
-  buttonContainer: {},
-  secondaryButton: {
-    borderColor: COLORS.Red[500],
-    borderWidth: 1,
-  },
-});
