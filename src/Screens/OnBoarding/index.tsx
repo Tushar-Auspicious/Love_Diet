@@ -1,10 +1,11 @@
 import { useIsFocused } from "@react-navigation/native";
-import React, { FC, useEffect, useMemo, useState } from "react";
+import React, { FC, useEffect, useMemo, useRef, useState } from "react";
 import {
   FlatList,
   NativeScrollEvent,
   NativeSyntheticEvent,
   View,
+  Animated,
 } from "react-native";
 import {
   SafeAreaView,
@@ -38,19 +39,23 @@ const OnBoarding: FC<OnBoardingScreenProps> = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const isFocused = useIsFocused();
 
-  const flatListRef = React.useRef<FlatList>(null);
-  const [currentSlideIndex, setCurrentSlideIndex] = React.useState(0);
+  const flatListRef = useRef<FlatList>(null);
+  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
 
   const [layout, setLayout] = useState<null | { height: number }>();
 
   // Combine original slides with the extra slide
   const slidesWithExtra = [...OnBoardingSlides, extraSlide];
 
+  // Animated value for smooth indicator transitions
+  const indicatorAnimation = useRef(new Animated.Value(0)).current;
+
   const resetToSlide = (index: number) => {
     if (flatListRef.current) {
       const offset = index * deviceWidth;
       flatListRef.current.scrollToOffset({ offset, animated: false });
       setCurrentSlideIndex(index);
+      indicatorAnimation.setValue(index); // Reset animation to the new index
     }
   };
 
@@ -68,18 +73,21 @@ const OnBoarding: FC<OnBoardingScreenProps> = ({ navigation }) => {
     }
   };
 
-  // const goToNextSlide = async () => {
-  //   const nextSlideIndex = currentSlideIndex + 1;
-  //   if (nextSlideIndex >= slidesWithExtra.length) {
-  //     navigation.navigate("onBoardingPlans");
-  //   } else {
-  //     const offset = nextSlideIndex * deviceWidth;
-  //     if (flatListRef.current) {
-  //       flatListRef.current.scrollToOffset({ offset });
-  //       setCurrentSlideIndex(nextSlideIndex);
-  //     }
-  //   }
-  // };
+  // Smooth scroll handler using onScroll
+  const handleScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const contentOffsetX = e.nativeEvent.contentOffset.x;
+    const newIndex = Math.round(contentOffsetX / deviceWidth);
+
+    // Smoothly animate the indicator to the new position
+    Animated.timing(indicatorAnimation, {
+      toValue: newIndex,
+      duration: 200, // Smooth transition duration
+      useNativeDriver: true,
+    }).start();
+
+    // Update currentSlideIndex immediately for navigation logic
+    setCurrentSlideIndex(newIndex);
+  };
 
   const renderSlides = ({
     item,
@@ -145,19 +153,21 @@ const OnBoarding: FC<OnBoardingScreenProps> = ({ navigation }) => {
             },
           ]}
         >
-          {slidesWithExtra.map((_, index) => (
-            <View
-              key={index}
-              style={[
-                styles.indicator,
-                currentSlideIndex === index && styles.indicatorActive,
-              ]}
-            />
-          ))}
+          {slidesWithExtra.map((_, index) => {
+            return (
+              <Animated.View
+                key={index}
+                style={[
+                  styles.indicator,
+                  index === currentSlideIndex && styles.indicatorActive,
+                ]}
+              />
+            );
+          })}
         </View>
       )
     );
-  }, [layout, currentSlideIndex]);
+  }, [layout, currentSlideIndex, indicatorAnimation]);
 
   useEffect(() => {
     if (isFocused) {
@@ -179,11 +189,13 @@ const OnBoarding: FC<OnBoardingScreenProps> = ({ navigation }) => {
       <FlatList
         ref={flatListRef}
         data={slidesWithExtra}
-        onMomentumScrollEnd={updateCurrentSlideIndex}
+        onScroll={handleScroll}
+        onMomentumScrollEnd={updateCurrentSlideIndex} // Keep for navigation logic
         showsHorizontalScrollIndicator={false}
         horizontal
         pagingEnabled
         renderItem={renderSlides}
+        scrollEventThrottle={16} // Update more frequently for smoothness
       />
       {renderIndicators}
     </SafeAreaView>

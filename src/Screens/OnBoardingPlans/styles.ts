@@ -116,10 +116,14 @@ const styles = StyleSheet.create({
     marginTop: verticalScale(10),
   },
   dot: {
-    width: horizontalScale(8),
-    height: horizontalScale(8),
-    borderRadius: 4,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: COLORS.White,
     marginHorizontal: horizontalScale(4),
+  },
+  dotActive: {
+    backgroundColor: COLORS.DarkBlue,
   },
 });
 

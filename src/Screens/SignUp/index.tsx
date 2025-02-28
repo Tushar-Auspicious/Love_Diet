@@ -1,11 +1,4 @@
-import React, {
-  FC,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import React, { FC, useEffect, useMemo, useRef, useState } from "react";
 import {
   BackHandler,
   FlatList,
@@ -31,17 +24,17 @@ import countryData from "../../Seeds/CountryData";
 import { SignUpScreenProps } from "../../Typings/route";
 import { RBSheetRef } from "../../Typings/type";
 import COLORS from "../../Utilities/Colors";
-import {
-  horizontalScale,
-  isAndroid,
-  verticalScale,
-} from "../../Utilities/Metrics";
+import { horizontalScale, hp, verticalScale } from "../../Utilities/Metrics";
 import styles from "./styles";
 
-const genderOptions = ["Male", "Female", "Other"]; // Gender options
+const genderOptions = ["Male", "Female"]; // Gender options
 
 const SignUp: FC<SignUpScreenProps> = ({ navigation }) => {
   const refRBSheet = useRef<RBSheetRef>(null);
+  const refCountryRBSheet = useRef<RBSheetRef>(null);
+
+  const profileScrollRef = useRef<ScrollView>(null); // Ref for the ScrollView in AddYourProfileUI
+  const countryScrollY = useRef(0); // Ref to store the scroll position
 
   const insets = useSafeAreaInsets();
   const totalSteps = 4;
@@ -181,9 +174,15 @@ const SignUp: FC<SignUpScreenProps> = ({ navigation }) => {
   const renderAddYourProfileUI = () => {
     return (
       <ScrollView
+        ref={profileScrollRef} // Add ref to track scroll position
         contentContainerStyle={{
           gap: verticalScale(20),
+          paddingVertical: 10,
         }}
+        onScroll={(event) => {
+          countryScrollY.current = event.nativeEvent.contentOffset.y; // Save scroll position
+        }}
+        scrollEventThrottle={16}
       >
         <CustomInput
           value={profilePicture}
@@ -234,7 +233,6 @@ const SignUp: FC<SignUpScreenProps> = ({ navigation }) => {
           style={styles.phoneInput}
           backgroundColor="transparent"
         />
-
         <CustomInput
           value={gender}
           label="Gender"
@@ -243,6 +241,9 @@ const SignUp: FC<SignUpScreenProps> = ({ navigation }) => {
           style={styles.phoneInput}
           backgroundColor="transparent"
           editable={false}
+          onPressMain={() => {
+            refRBSheet.current?.open();
+          }}
         />
         <CustomInput
           value={country}
@@ -254,10 +255,9 @@ const SignUp: FC<SignUpScreenProps> = ({ navigation }) => {
           backgroundColor="transparent"
           editable={false}
           onPressMain={() => {
-            setIsCountryModal(true);
+            refCountryRBSheet.current?.open();
           }}
         />
-        {/* </TouchableOpacity> */}
       </ScrollView>
     );
   };
@@ -319,54 +319,6 @@ const SignUp: FC<SignUpScreenProps> = ({ navigation }) => {
     );
   };
 
-  const renderCountrySearch = () => {
-    return (
-      <View style={styles.countrySearchContainer}>
-        <CustomInput
-          value={searchedCountry}
-          type="search"
-          placeholder="Search by title"
-          onChangeText={(text) => {
-            setSearchedCountry(text);
-            const filtered = countryData.filter((country) =>
-              country.name.common.toLowerCase().includes(text.toLowerCase())
-            );
-            setFilteredCountries(filtered);
-          }}
-          style={styles.phoneInput}
-          backgroundColor="transparent"
-        />
-        <FlatList
-          data={filteredCountries}
-          contentContainerStyle={styles.countryListContent}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              style={[
-                styles.countryItem,
-                {
-                  borderWidth: 1,
-                  borderColor:
-                    country === item.name.common
-                      ? COLORS.Red[500]
-                      : "transparent",
-                },
-              ]}
-              onPress={() => {
-                setCountry(item.name.common);
-              }}
-            >
-              <CustomText>{item.flag}</CustomText>
-              <CustomText variant="xsRegular" color={COLORS.Gray[500]}>
-                {item.name.common}
-              </CustomText>
-            </TouchableOpacity>
-          )}
-          keyExtractor={(item) => item.name.common}
-        />
-      </View>
-    );
-  };
-
   const isPrmaryButtonDisabled = () => {
     if (activeIndex === 1) {
       return !phoneNumber.trim();
@@ -388,7 +340,7 @@ const SignUp: FC<SignUpScreenProps> = ({ navigation }) => {
           !email.trim() ||
           !confirmEmail.trim() ||
           !birthDate.trim() ||
-          // !gender.trim() ||
+          !gender.trim() ||
           !country.trim()
         );
       }
@@ -396,10 +348,6 @@ const SignUp: FC<SignUpScreenProps> = ({ navigation }) => {
       return false;
     }
   };
-
-  useLayoutEffect(() => {
-    refRBSheet.current?.open();
-  }, [activeIndex, navigation]);
 
   useEffect(() => {
     // Handle Android Back Button
@@ -440,82 +388,66 @@ const SignUp: FC<SignUpScreenProps> = ({ navigation }) => {
     };
   }, []);
 
+  // Restore scroll position when returning to AddYourProfileUI
+  useEffect(() => {
+    if (activeIndex === 4 && !isCountryModal && profileScrollRef.current) {
+      // Restore scroll position when coming back from country modal
+      profileScrollRef.current.scrollTo({
+        y: countryScrollY.current,
+        animated: false,
+      });
+    }
+  }, [activeIndex, isCountryModal]);
+
   return (
-    <KeyboardAvoidingContainer>
+    // <KeyboardAvoidingContainer scrollEnabled={false}>
+    <>
       <SafeAreaView
         style={[
           styles.container,
           {
-            paddingBottom: verticalScale(10) + insets.bottom,
+            paddingBottom: verticalScale(10),
           },
         ]}
       >
-        <RBSheet
-          key={1}
-          ref={refRBSheet}
-          useNativeDriver={false}
-          onClose={() => navigation.goBack()}
-          customStyles={{
-            wrapper: styles.rbSheetWrapper,
-            draggableIcon: styles.rbSheetDraggableIcon,
-            container: [
-              styles.rbSheetContainer,
-              {
-                paddingTop: isKeyboardVisible
-                  ? isAndroid
-                    ? verticalScale(30) + insets.top
-                    : verticalScale(10)
-                  : verticalScale(10),
-                paddingBottom: insets.bottom + verticalScale(10),
-                gap: verticalScale(20),
-              },
-            ],
-          }}
-          customModalProps={{
-            animationType: "slide",
-            statusBarTranslucent: true,
-          }}
-          customAvoidingViewProps={{
-            enabled: false,
+        <View
+          style={{
+            flex: 1,
+            paddingHorizontal: horizontalScale(16),
+            gap: verticalScale(10),
           }}
         >
-          <View style={{ gap: verticalScale(20) }}>
-            {!isCountryModal && (
-              <View style={styles.headerContainer}>
-                <CustomIcon
-                  onPress={handleBackPress}
-                  Icon={ICONS.RedbackArrow}
-                />
+          <View style={{ gap: verticalScale(10) }}>
+            <View style={styles.headerContainer}>
+              <CustomIcon onPress={handleBackPress} Icon={ICONS.RedbackArrow} />
+              <View
+                style={{
+                  flexDirection: "row",
+                  flex: 1,
+                  alignItems: "center",
+                  gap: horizontalScale(10),
+                }}
+              >
                 <View
                   style={{
-                    flexDirection: "row",
                     flex: 1,
-                    alignItems: "center",
-                    gap: horizontalScale(10),
+                    height: 8,
+                    backgroundColor: COLORS.Gray[100],
+                    borderRadius: 20,
                   }}
                 >
                   <View
                     style={{
-                      flex: 1,
+                      width: `${(activeIndex / totalSteps) * 100}%`, // Dynamic width
                       height: 8,
-                      backgroundColor: COLORS.Gray[100],
+                      backgroundColor: COLORS.Red[500],
                       borderRadius: 20,
                     }}
-                  >
-                    <View
-                      style={{
-                        width: `${(activeIndex / totalSteps) * 100}%`, // Dynamic width
-                        height: 8,
-                        backgroundColor: COLORS.Red[500],
-                        borderRadius: 20,
-                      }}
-                    />
-                  </View>
-                  <CustomText variant="mMedium">{`${activeIndex}/${totalSteps}`}</CustomText>
+                  />
                 </View>
+                <CustomText variant="mMedium">{`${activeIndex}/${totalSteps}`}</CustomText>
               </View>
-            )}
-
+            </View>
             <View style={{ alignItems: "center" }}>
               <CustomText variant="xlSemiBold" style={{ textAlign: "center" }}>
                 {isCountryModal ? "Select Country" : renderHeaderText?.title}
@@ -531,12 +463,12 @@ const SignUp: FC<SignUpScreenProps> = ({ navigation }) => {
               )}
             </View>
           </View>
-          {activeIndex === 1 && renderAddPhoneNumberUI()}
-          {activeIndex === 2 && renderVerifyPhoneNumber()}
-          {activeIndex === 3 && rnederCreatePasswordUI()}
-          {isCountryModal
-            ? renderCountrySearch()
-            : activeIndex === 4 && renderAddYourProfileUI()}
+          <View style={{ flex: 1 }}>
+            {activeIndex === 1 && renderAddPhoneNumberUI()}
+            {activeIndex === 2 && renderVerifyPhoneNumber()}
+            {activeIndex === 3 && rnederCreatePasswordUI()}
+            {activeIndex === 4 && renderAddYourProfileUI()}
+          </View>
           <View style={styles.buttonContainer}>
             <PrimaryButton
               title="Continue"
@@ -553,9 +485,160 @@ const SignUp: FC<SignUpScreenProps> = ({ navigation }) => {
               style={styles.secondaryButton}
             />
           </View>
-        </RBSheet>
+        </View>
       </SafeAreaView>
-    </KeyboardAvoidingContainer>
+      <RBSheet
+        key={1}
+        ref={refRBSheet}
+        useNativeDriver={false}
+        draggable
+        customStyles={{
+          wrapper: styles.rbSheetWrapper,
+          draggableIcon: styles.rbSheetDraggableIcon,
+          container: [
+            styles.rbSheetContainer,
+            {
+              paddingBottom: insets.bottom + verticalScale(10),
+              gap: 20,
+              height: "auto",
+            },
+          ],
+        }}
+        customModalProps={{
+          animationType: "slide",
+          statusBarTranslucent: true,
+        }}
+        customAvoidingViewProps={{
+          enabled: false,
+        }}
+      >
+        <CustomText style={{ textAlign: "center" }} variant="lSemiBold">
+          Select Gender
+        </CustomText>
+
+        <View
+          style={{
+            gap: verticalScale(20),
+          }}
+        >
+          {genderOptions.map((option) => (
+            <TouchableOpacity
+              key={option}
+              style={[
+                styles.genderItem,
+                {
+                  backgroundColor:
+                    gender === option ? COLORS.Red[500] : "transparent",
+                },
+              ]}
+              onPress={() => {
+                setGender(option);
+              }}
+            >
+              <CustomText
+                color={gender === option ? COLORS.White : "#71717A"}
+                variant="xsRegular"
+              >
+                {option}
+              </CustomText>
+            </TouchableOpacity>
+          ))}
+        </View>
+        <PrimaryButton
+          title="Continue"
+          onPress={() => refRBSheet.current?.close()}
+          isFullWidth
+          disabled={!gender}
+        />
+      </RBSheet>
+
+      <RBSheet
+        key={1}
+        ref={refCountryRBSheet}
+        useNativeDriver={false}
+        draggable
+        customStyles={{
+          wrapper: styles.rbSheetWrapper,
+          draggableIcon: styles.rbSheetDraggableIcon,
+          container: [
+            styles.rbSheetContainer,
+            {
+              paddingBottom: insets.bottom + verticalScale(10),
+              gap: 20,
+              height: hp(90),
+            },
+          ],
+        }}
+        customModalProps={{
+          animationType: "slide",
+          statusBarTranslucent: true,
+        }}
+        customAvoidingViewProps={{
+          enabled: false,
+        }}
+      >
+        <View style={styles.countrySearchContainer}>
+          <CustomInput
+            value={searchedCountry}
+            type="search"
+            placeholder="Search by title"
+            onChangeText={(text) => {
+              setSearchedCountry(text);
+              const filtered = countryData.filter((country) =>
+                country.name.common.toLowerCase().includes(text.toLowerCase())
+              );
+              setFilteredCountries(filtered);
+            }}
+            style={styles.phoneInput}
+            backgroundColor="transparent"
+          />
+          <FlatList
+            data={filteredCountries}
+            contentContainerStyle={styles.countryListContent}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={[
+                  styles.countryItem,
+                  {
+                    borderWidth: 1,
+                    borderColor:
+                      country === item.name.common
+                        ? COLORS.Red[500]
+                        : "transparent",
+                  },
+                ]}
+                onPress={() => {
+                  setCountry(item.name.common);
+                }}
+              >
+                <CustomText>{item.flag}</CustomText>
+                <CustomText variant="xsRegular" color={COLORS.Gray[500]}>
+                  {item.name.common}
+                </CustomText>
+              </TouchableOpacity>
+            )}
+            keyExtractor={(item) => item.name.common}
+          />
+          <View style={styles.buttonContainer}>
+            <PrimaryButton
+              title="Continue"
+              onPress={() => refCountryRBSheet.current?.close()}
+              isFullWidth
+              disabled={!country.trim()}
+            />
+            <PrimaryButton
+              title="Back"
+              onPress={() => refCountryRBSheet.current?.close()}
+              isFullWidth
+              backgroundColor={COLORS.White}
+              textColor={COLORS.Red[500]}
+              style={styles.secondaryButton}
+            />
+          </View>
+        </View>
+      </RBSheet>
+    </>
+    // </KeyboardAvoidingContainer>
   );
 };
 

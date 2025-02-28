@@ -20,10 +20,8 @@ const styles = StyleSheet.create({
   rbSheetDraggableIcon: {},
   rbSheetContainer: {
     paddingHorizontal: horizontalScale(16),
-    height: hp(90),
     borderTopEndRadius: 20,
     borderTopStartRadius: 20,
-    justifyContent: "space-between",
   },
   headerContainer: {
     flexDirection: "row",
@@ -93,6 +91,11 @@ const styles = StyleSheet.create({
     paddingVertical: verticalScale(10),
     paddingHorizontal: horizontalScale(10),
     borderRadius: 10,
+  },
+  genderItem: {
+    paddingVertical: verticalScale(12),
+    paddingHorizontal: horizontalScale(10),
+    borderRadius: 8,
   },
 });
 

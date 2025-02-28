@@ -171,6 +171,7 @@ const CustomInput = forwardRef<TextInput, CustomInputProps>(
             {label}
           </CustomText>
         )}
+
         {type === "profile" ? (
           value.length > 0 ? (
             <View style={{ flexDirection: "row", gap: horizontalScale(10) }}>

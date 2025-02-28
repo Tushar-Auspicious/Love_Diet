@@ -1,7 +1,10 @@
-import React, { FC, useState } from "react";
+import React, { FC, useRef, useState } from "react";
 import {
+  Animated,
   FlatList,
   Image,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
   ScrollView,
   TouchableOpacity,
   View,
@@ -26,6 +29,7 @@ import {
 import { OnBoardingPlansScreenProps } from "../../Typings/route";
 import COLORS from "../../Utilities/Colors";
 import {
+  deviceWidth,
   horizontalScale,
   hp,
   verticalScale,
@@ -36,10 +40,30 @@ import styles from "./styles";
 const OnBoardingPlans: FC<OnBoardingPlansScreenProps> = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const [activeIndex, setActiveIndex] = useState(0);
-  const handleScroll = (event: any) => {
-    const contentOffsetX = event.nativeEvent.contentOffset.x;
-    const index = Math.round(contentOffsetX / wp(90)); // Adjust width based on item size
-    setActiveIndex(index);
+
+  // Animated value for smooth indicator transitions
+  const indicatorAnimation = useRef(new Animated.Value(0)).current;
+
+  // const handleScroll = (event: any) => {
+  //   const contentOffsetX = event.nativeEvent.contentOffset.x;
+  //   const index = Math.round(contentOffsetX / wp(90)); // Adjust width based on item size
+  //   setActiveIndex(index);
+  // };
+
+  // Smooth scroll handler using onScroll
+  const handleScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const contentOffsetX = e.nativeEvent.contentOffset.x;
+    const newIndex = Math.round(contentOffsetX / deviceWidth);
+
+    // Smoothly animate the indicator to the new position
+    Animated.timing(indicatorAnimation, {
+      toValue: newIndex,
+      duration: 200, // Smooth transition duration
+      useNativeDriver: true,
+    }).start();
+
+    // Update currentSlideIndex immediately for navigation logic
+    setActiveIndex(newIndex);
   };
 
   // State to track the selected plan (null, plan index, or "free" for free trial)
@@ -144,9 +168,6 @@ const OnBoardingPlans: FC<OnBoardingPlansScreenProps> = ({ navigation }) => {
           data={PlanReviews}
           horizontal
           pagingEnabled
-          snapToAlignment="center"
-          snapToInterval={wp(90) + horizontalScale(10)} // Ensure spacing between slides
-          decelerationRate="fast"
           showsHorizontalScrollIndicator={false}
           renderItem={({ item }) => (
             <View style={styles.reviewCard}>
@@ -178,7 +199,7 @@ const OnBoardingPlans: FC<OnBoardingPlansScreenProps> = ({ navigation }) => {
         {/* Pagination Dots */}
         <View style={styles.paginationContainer}>
           {PlanReviews.map((_, index) => (
-            <View
+            <Animated.View
               key={index}
               style={[
                 styles.dot,

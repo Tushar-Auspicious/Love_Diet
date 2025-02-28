@@ -14,18 +14,6 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.White,
     justifyContent: "center",
   },
-  rbSheetWrapper: {
-    backgroundColor: "rgba(0,0,0,0.3)",
-  },
-  rbSheetDraggableIcon: {},
-  rbSheetContainer: {
-    paddingHorizontal: horizontalScale(16),
-    paddingTop: verticalScale(10),
-    height: hp(90),
-    borderTopEndRadius: 20,
-    borderTopStartRadius: 20,
-    justifyContent: "space-between",
-  },
   headerContainer: {
     paddingVertical: verticalScale(10),
     width: "100%",

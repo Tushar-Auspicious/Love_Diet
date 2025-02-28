@@ -1,21 +1,19 @@
 import React, {
   FC,
+  useCallback,
   useEffect,
-  useLayoutEffect,
   useMemo,
   useRef,
   useState,
 } from "react";
 import {
   Alert,
-  BackHandler,
   Keyboard,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
 import { CountryCode } from "react-native-country-picker-modal";
-import RBSheet from "react-native-raw-bottom-sheet";
 import {
   SafeAreaView,
   useSafeAreaInsets,
@@ -27,146 +25,134 @@ import { CustomText } from "../../Components/CustomText";
 import { KeyboardAvoidingContainer } from "../../Components/KeyboardAvoidingComponent";
 import PrimaryButton from "../../Components/PrimaryButton";
 import { LoginScreenProps } from "../../Typings/route";
-import { RBSheetRef } from "../../Typings/type";
 import COLORS from "../../Utilities/Colors";
-import { isAndroid, verticalScale } from "../../Utilities/Metrics";
+import {
+  horizontalScale,
+  isAndroid,
+  verticalScale,
+} from "../../Utilities/Metrics";
 import styles from "./style";
 
-const Login: FC<LoginScreenProps> = ({ navigation }) => {
-  const refRBSheet = useRef<RBSheetRef>(null);
+// Type definitions
+interface OtpState {
+  value: string[];
+  inputs: (TextInput | null)[];
+}
+
+const Login: FC<LoginScreenProps> = React.memo(({ navigation }) => {
   const insets = useSafeAreaInsets();
 
+  // State management
   const [activeIndex, setActiveIndex] = useState(0);
-
   const [countryCode, setCountryCode] = useState<CountryCode>("US");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
-
   const [forgotPasswordNumber, setForgotPasswordNumber] = useState("");
   const [forgotCountryCode, setForgotCountryCode] = useState<CountryCode>("US");
-
   const [createPassword, setCreatePassword] = useState("");
   const [confirmCreatePassword, setConfirmCreatePassword] = useState("");
-
-  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
-  const inputs = useRef<(TextInput | null)[]>([]);
+  const [otp, setOtp] = useState<OtpState>({
+    value: Array(6).fill(""),
+    inputs: [],
+  });
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
-
   const [isKeyboardVisible, setKeyboardVisible] = useState(false);
 
-  const handleInputChange = (value: string, index: number) => {
-    if (!/^\d?$/.test(value)) return; // Allow only digits (0-9) or empty values
+  const inputs = useRef<(TextInput | null)[]>([]);
 
-    const newOtp = [...otp];
-    newOtp[index] = value;
-    setOtp(newOtp);
+  // Memoized handlers
+  const handleInputChange = useCallback((value: string, index: number) => {
+    if (!/^\d?$/.test(value)) return;
 
-    if (value && index < otp.length - 1) {
-      inputs.current[index + 1]?.focus(); // Move focus to the next input
-    }
-  };
-
-  const handleKeyPress = (event: any, index: number) => {
-    if (event.nativeEvent.key === "Backspace") {
-      const newOtp = [...otp];
-
-      if (!newOtp[index] && index > 0) {
-        inputs.current[index - 1]?.focus(); // Move focus to the previous input if empty
+    setOtp((prev) => {
+      const newOtp = [...prev.value];
+      newOtp[index] = value;
+      if (value && index < 5) {
+        inputs.current[index + 1]?.focus();
       }
+      return { ...prev, value: newOtp };
+    });
+  }, []);
 
-      newOtp[index] = "";
-      setOtp(newOtp);
-    }
-  };
-
-  const handlePhoneNumberChange = (text: string) => {
-    if (/^\d*$/.test(text)) {
-      setPhoneNumber(text);
-    }
-  };
-
-  const handleContinue = () => {
-    if (activeIndex === 0) {
-      Alert.alert("In Progress");
-      navigation.navigate("mainStack", {
-        screen: "tabs",
-        params: {
-          screen: "dashboard",
-        },
+  const handleKeyPress = useCallback((event: any, index: number) => {
+    if (event.nativeEvent.key === "Backspace") {
+      setOtp((prev) => {
+        const newOtp = [...prev.value];
+        if (!newOtp[index] && index > 0) {
+          inputs.current[index - 1]?.focus();
+        }
+        newOtp[index] = "";
+        return { ...prev, value: newOtp };
       });
     }
-    if (activeIndex === 1) {
-      setActiveIndex(activeIndex + 1);
-    }
-    if (activeIndex === 2) {
-      setActiveIndex(activeIndex + 1);
-    }
-    if (activeIndex === 3) {
-      setActiveIndex(0);
-    }
-  };
+  }, []);
 
-  const handlePressForgotPassword = () => {
-    setActiveIndex(activeIndex + 1);
-  };
+  const handlePhoneNumberChange = useCallback((text: string) => {
+    if (/^\d*$/.test(text)) setPhoneNumber(text);
+  }, []);
 
-  const handleBackPress = () => {
-    if (activeIndex === 0) {
-      navigation.goBack();
-    } else {
-      setActiveIndex(activeIndex - 1);
+  const handleContinue = useCallback(() => {
+    switch (activeIndex) {
+      case 0:
+        Alert.alert("In Progress");
+        navigation.navigate("mainStack", {
+          screen: "tabs",
+          params: { screen: "dashboard" },
+        });
+        break;
+      case 3:
+        setActiveIndex(0);
+        break;
+      default:
+        setActiveIndex((prev) => prev + 1);
     }
-  };
+  }, [activeIndex, navigation]);
 
-  const isPrmaryButtonDisabled = () => {
-    if (activeIndex === 0) {
-      return !phoneNumber.trim() || !password.trim();
-    }
-    if (activeIndex === 1) {
-      return !forgotPasswordNumber.trim();
-    }
-    if (activeIndex === 2) {
-      return otp.some((val) => !val.trim());
-    }
-    if (activeIndex === 3) {
-      return !createPassword.trim() || !confirmCreatePassword.trim();
-    } else {
-      return false;
-    }
-  };
+  const handleBackPress = useCallback(() => {
+    activeIndex === 0
+      ? navigation.goBack()
+      : setActiveIndex((prev) => prev - 1);
+  }, [activeIndex, navigation]);
 
-  const renderHeaderText = useMemo(() => {
-    if (activeIndex === 0) {
-      return "Log In";
-    }
-    if (activeIndex === 1) {
-      return "Forgot Password";
-    }
-    if (activeIndex === 2) {
-      return "Verify Phone Number";
-    }
-    if (activeIndex === 3) {
-      return "Create Password";
-    }
-  }, [activeIndex]);
+  // Memoized validation
+  const isPrimaryButtonDisabled = useMemo(
+    () =>
+      ({
+        0: !phoneNumber.trim() || !password.trim(),
+        1: !forgotPasswordNumber.trim(),
+        2: otp.value.some((val) => !val.trim()),
+        3: !createPassword.trim() || !confirmCreatePassword.trim(),
+      }[activeIndex]),
+    [
+      activeIndex,
+      phoneNumber,
+      password,
+      forgotPasswordNumber,
+      otp.value,
+      createPassword,
+      confirmCreatePassword,
+    ]
+  );
 
-  const renderMainButtonText = useMemo(() => {
-    if (activeIndex === 0) {
-      return "Log In";
-    }
-    if (activeIndex === 1) {
-      return "Send Link";
-    }
-    if (activeIndex === 2) {
-      return "Verify Phone Number";
-    } else {
-      return "Create Password";
-    }
-  }, [activeIndex]);
+  // Memoized UI elements
+  const headerText = useMemo(
+    () =>
+      ["Log In", "Forgot Password", "Verify Phone Number", "Create Password"][
+        activeIndex
+      ],
+    [activeIndex]
+  );
+  const mainButtonText = useMemo(
+    () =>
+      ["Log In", "Send Link", "Verify Phone Number", "Create Password"][
+        activeIndex
+      ],
+    [activeIndex]
+  );
 
-  const renderLoginUI = () => {
-    return (
-      <View style={styles.formContainer}>
+  const renderContent = useMemo(() => {
+    const components = [
+      <View style={styles.formContainer} key="login">
         <CustomInput
           value={phoneNumber}
           label="Phone Number"
@@ -177,9 +163,7 @@ const Login: FC<LoginScreenProps> = ({ navigation }) => {
           backgroundColor="transparent"
           type="country"
           countryCode={countryCode}
-          onSelectCountry={(country) => {
-            setCountryCode(country.cca2);
-          }}
+          onSelectCountry={(country) => setCountryCode(country.cca2)}
         />
         <CustomInput
           value={password}
@@ -192,62 +176,48 @@ const Login: FC<LoginScreenProps> = ({ navigation }) => {
         />
         <TouchableOpacity style={{ alignSelf: "flex-end" }}>
           <CustomText
-            onPress={handlePressForgotPassword}
+            onPress={() => setActiveIndex(1)}
             variant="mSemiBold"
             color={COLORS.Red[500]}
           >
             Forgot Password
           </CustomText>
         </TouchableOpacity>
-      </View>
-    );
-  };
-
-  const renderForgotPasswordUI = () => {
-    return (
-      <View style={styles.formContainer}>
+      </View>,
+      <View style={styles.formContainer} key="forgot">
         <CustomInput
           value={forgotPasswordNumber}
           label="Phone Number"
           placeholder="Enter phone number"
-          onChangeText={(text) => {
-            if (/^\d*$/.test(text)) {
-              setForgotPasswordNumber(text);
-            }
-          }}
+          onChangeText={(text) =>
+            /^\d*$/.test(text) && setForgotPasswordNumber(text)
+          }
           keyboardType="numeric"
           style={styles.phoneInput}
           backgroundColor="transparent"
           type="country"
           countryCode={forgotCountryCode}
-          onSelectCountry={(country) => {
-            setForgotCountryCode(country.cca2);
-          }}
+          onSelectCountry={(country) => setForgotCountryCode(country.cca2)}
         />
         <CustomText variant="sRegular" color={COLORS.Gray[500]}>
           A link to reset your password will be sent to your phone number
         </CustomText>
-      </View>
-    );
-  };
-
-  const renderVerifyPhoneNumber = () => {
-    return (
-      <View style={styles.formContainer}>
+      </View>,
+      <View style={styles.formContainer} key="verify">
         <View style={styles.otpContainer}>
-          {otp.map((digit, index) => (
+          {otp.value.map((digit, index) => (
             <CustomInput
               key={index}
-              ref={(ref: TextInput | null) => (inputs.current[index] = ref)}
+              ref={(ref) => (inputs.current[index] = ref)}
               style={[
                 styles.input,
-                focusedIndex === index && styles.focusedInput, // Apply border color when focused
+                focusedIndex === index && styles.focusedInput,
               ]}
               keyboardType="numeric"
               maxLength={1}
               value={digit}
               onChangeText={(value) => handleInputChange(value, index)}
-              onKeyPress={(event: any) => handleKeyPress(event, index)}
+              onKeyPress={(event) => handleKeyPress(event, index)}
               autoFocus={index === 0}
               onFocus={() => setFocusedIndex(index)}
               onBlur={() => setFocusedIndex(null)}
@@ -259,13 +229,8 @@ const Login: FC<LoginScreenProps> = ({ navigation }) => {
             Resend Code
           </CustomText>
         </TouchableOpacity>
-      </View>
-    );
-  };
-
-  const rnederCreatePasswordUI = () => {
-    return (
-      <View style={styles.formContainer}>
+      </View>,
+      <View style={styles.formContainer} key="create">
         <CustomInput
           value={createPassword}
           label="Password"
@@ -284,48 +249,35 @@ const Login: FC<LoginScreenProps> = ({ navigation }) => {
           type="password"
           backgroundColor="transparent"
         />
-      </View>
-    );
-  };
-
-  useLayoutEffect(() => {
-    refRBSheet.current?.open();
-  }, [activeIndex, navigation]);
-
-  useEffect(() => {
-    // Handle Android Back Button
-    const backHandler = BackHandler.addEventListener(
-      "hardwareBackPress",
-      () => {
-        if (activeIndex === 0) {
-          navigation.goBack();
-        } else {
-          setActiveIndex((prevIndex) => prevIndex - 1);
-        }
-        return true; // Prevent default behavior
-      }
-    );
-
-    return () => backHandler.remove(); // Cleanup on unmount
-  }, []);
+      </View>,
+    ];
+    return components[activeIndex];
+  }, [
+    activeIndex,
+    phoneNumber,
+    password,
+    forgotPasswordNumber,
+    forgotCountryCode,
+    otp.value,
+    createPassword,
+    confirmCreatePassword,
+    countryCode,
+    focusedIndex,
+    handlePhoneNumberChange,
+    handleInputChange,
+    handleKeyPress,
+  ]);
 
   useEffect(() => {
-    const keyboardDidShowListener = Keyboard.addListener(
-      "keyboardDidShow",
-      () => {
-        setKeyboardVisible(true);
-      }
+    const showSub = Keyboard.addListener("keyboardDidShow", () =>
+      setKeyboardVisible(true)
     );
-    const keyboardDidHideListener = Keyboard.addListener(
-      "keyboardDidHide",
-      () => {
-        setKeyboardVisible(false);
-      }
+    const hideSub = Keyboard.addListener("keyboardDidHide", () =>
+      setKeyboardVisible(false)
     );
-
     return () => {
-      keyboardDidShowListener.remove();
-      keyboardDidHideListener.remove();
+      showSub.remove();
+      hideSub.remove();
     };
   }, []);
 
@@ -334,38 +286,13 @@ const Login: FC<LoginScreenProps> = ({ navigation }) => {
       <SafeAreaView
         style={[
           styles.container,
-          { paddingBottom: verticalScale(10) + insets.bottom },
+          {
+            paddingBottom: verticalScale(10) + insets.bottom,
+          },
         ]}
       >
-        <RBSheet
-          ref={refRBSheet}
-          useNativeDriver={false}
-          customStyles={{
-            wrapper: styles.rbSheetWrapper,
-            draggableIcon: styles.rbSheetDraggableIcon,
-            container: [
-              styles.rbSheetContainer,
-              {
-                paddingTop: isKeyboardVisible
-                  ? isAndroid
-                    ? verticalScale(30) + insets.top
-                    : verticalScale(10)
-                  : verticalScale(10),
-                paddingBottom: insets.bottom + verticalScale(10),
-              },
-            ],
-          }}
-          customModalProps={{
-            animationType: "slide",
-            statusBarTranslucent: true,
-          }}
-          customAvoidingViewProps={{
-            enabled: false,
-          }}
-          closeOnPressBack={true}
-          onClose={() => navigation.goBack()}
-        >
-          <View style={{ gap: verticalScale(20) }}>
+        <View style={{ flex: 1, paddingHorizontal: horizontalScale(16) }}>
+          <View style={{ gap: verticalScale(20), flex: 1 }}>
             <View style={styles.headerContainer}>
               <View style={styles.backButton}>
                 <CustomIcon
@@ -373,20 +300,16 @@ const Login: FC<LoginScreenProps> = ({ navigation }) => {
                   Icon={ICONS.RedbackArrow}
                 />
               </View>
-              <CustomText variant="xlSemiBold">{renderHeaderText}</CustomText>
+              <CustomText variant="xlSemiBold">{headerText}</CustomText>
             </View>
-
-            {activeIndex === 0 && renderLoginUI()}
-            {activeIndex === 1 && renderForgotPasswordUI()}
-            {activeIndex === 2 && renderVerifyPhoneNumber()}
-            {activeIndex === 3 && rnederCreatePasswordUI()}
+            {renderContent}
           </View>
           <View style={styles.buttonContainer}>
             <PrimaryButton
-              title={renderMainButtonText}
+              title={mainButtonText}
               onPress={handleContinue}
               isFullWidth
-              disabled={isPrmaryButtonDisabled()}
+              disabled={isPrimaryButtonDisabled}
             />
             <PrimaryButton
               title="Back"
@@ -397,10 +320,10 @@ const Login: FC<LoginScreenProps> = ({ navigation }) => {
               style={styles.secondaryButton}
             />
           </View>
-        </RBSheet>
+        </View>
       </SafeAreaView>
     </KeyboardAvoidingContainer>
   );
-};
+});
 
 export default Login;
