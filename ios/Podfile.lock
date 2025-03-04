@@ -1617,6 +1617,27 @@ PODS:
     - React-logger (= 0.76.0)
     - React-perflogger (= 0.76.0)
     - React-utils (= 0.76.0)
+  - RNGestureHandler (2.24.0):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.01.01.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - RNReanimated (3.17.0):
     - DoubleConversion
     - glog
@@ -1895,6 +1916,7 @@ DEPENDENCIES:
   - React-utils (from `../node_modules/react-native/ReactCommon/react/utils`)
   - ReactCodegen (from `build/generated/ios`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
+  - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
   - RNSVG (from `../node_modules/react-native-svg`)
@@ -2036,6 +2058,8 @@ EXTERNAL SOURCES:
     :path: build/generated/ios
   ReactCommon:
     :path: "../node_modules/react-native/ReactCommon"
+  RNGestureHandler:
+    :path: "../node_modules/react-native-gesture-handler"
   RNReanimated:
     :path: "../node_modules/react-native-reanimated"
   RNScreens:
@@ -2111,6 +2135,7 @@ SPEC CHECKSUMS:
   React-utils: d9624101245ebaab39c9f1bd786132da0b4f27ff
   ReactCodegen: dbfef1fef26f42c900bb1884fa149d49d501d64d
   ReactCommon: 429ca28cd813c31359c73ffac6dc24f93347d522
+  RNGestureHandler: 2a0d67d2378072a9be03cdd954bf4e4474c46c22
   RNReanimated: 1829eb04637050bb5428f83def02c70208db41fd
   RNScreens: d022507f2b6d76c73335e9e35aedcf7bb2f791b0
   RNSVG: 2df153c20fffef75a099c23836cd5e9ecba386fe

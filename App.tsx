@@ -1,4 +1,4 @@
-import { NavigationContainer } from "@react-navigation/native";
+import { NavigationContainer, NavigationState } from "@react-navigation/native";
 import React, { useEffect, useMemo, useState } from "react";
 import { Appearance, LogBox, StatusBar, StatusBarStyle } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -13,7 +13,7 @@ LogBox.ignoreAllLogs();
 const App = () => {
   const [isReady, setIsReady] = useState(false);
   const [currentRoute, setCurrentRoute] = useState<string | null>(null);
-
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   useEffect(() => {
     Appearance.setColorScheme("light");
 
@@ -36,27 +36,52 @@ const App = () => {
   };
 
   // Handler for navigation state changes
-  const handleNavigationStateChange = (state: any) => {
+  const handleNavigationStateChange = (
+    state: Readonly<NavigationState> | undefined
+  ) => {
     const routeName = getCurrentRouteName(state);
+    const routeHistory: any = state?.routes.find(
+      (item) => item.name === "mainStack"
+    )?.state?.history;
+
+    setIsDrawerOpen(
+      routeHistory?.find((item: any) => item.type === "drawer")?.status ===
+        "open"
+    );
     setCurrentRoute(routeName);
   };
+
+  const routesWithRedStatusBar = [
+    "onBoardingPlans",
+    "dashboard",
+    "aggrement",
+    "progress",
+    "messenger",
+  ];
 
   const statusBarColor = useMemo((): {
     bgColor: string;
     content: StatusBarStyle;
   } => {
-    if (currentRoute === "onBoardingPlans") {
-      return {
-        bgColor: COLORS.Red[500],
-        content: "light-content",
-      };
-    } else {
+    if (isDrawerOpen) {
       return {
         bgColor: COLORS.White,
         content: "dark-content",
       };
+    } else {
+      if (routesWithRedStatusBar.includes(currentRoute!)) {
+        return {
+          bgColor: COLORS.Red[500],
+          content: "light-content",
+        };
+      } else {
+        return {
+          bgColor: COLORS.White,
+          content: "dark-content",
+        };
+      }
     }
-  }, [currentRoute]);
+  }, [currentRoute, isDrawerOpen]);
 
   return (
     <>

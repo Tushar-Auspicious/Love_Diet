@@ -1,9 +1,17 @@
-import { NavigatorScreenParams } from "@react-navigation/native";
-import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { DrawerNavigationProp } from "@react-navigation/drawer";
+import {
+  CompositeNavigationProp,
+  NavigatorScreenParams,
+  RouteProp,
+} from "@react-navigation/native";
+import {
+  NativeStackNavigationProp,
+  NativeStackScreenProps,
+} from "@react-navigation/native-stack";
 
 export type RootStackParams = {
   authStack: NavigatorScreenParams<AuthStackParams>;
-  mainStack: NavigatorScreenParams<MainStackParams>;
+  mainStack: DrawerNavigationProp<MainStackParams>;
 };
 
 export type AuthStackParams = {
@@ -19,6 +27,14 @@ export type AuthStackParams = {
 
 export type MainStackParams = {
   tabs: NavigatorScreenParams<BottomTabParams>;
+  porfile: undefined;
+  settings: undefined;
+  subscriptions: undefined;
+  termsANdCondition: undefined;
+  privacyPolicy: undefined;
+  rateUs: undefined;
+  contactUs: undefined;
+  notifications: undefined;
 };
 
 export type BottomTabParams = {
@@ -51,3 +67,35 @@ export type SignUpScreenProps = NativeStackScreenProps<
   AuthStackParams & RootStackParams,
   "signUp"
 >;
+
+export type DahboardProps = {
+  navigation: CompositeNavigationProp<
+    NativeStackNavigationProp<MainStackParams & BottomTabParams, "dashboard">,
+    DrawerNavigationProp<BottomTabParams, "dashboard">
+  >;
+  route: RouteProp<MainStackParams & BottomTabParams, "dashboard">;
+};
+
+export type AgreementProps = {
+  navigation: CompositeNavigationProp<
+    NativeStackNavigationProp<MainStackParams & BottomTabParams, "aggrement">,
+    DrawerNavigationProp<BottomTabParams, "aggrement">
+  >;
+  route: RouteProp<MainStackParams & BottomTabParams, "aggrement">;
+};
+
+export type ProgressProps = {
+  navigation: CompositeNavigationProp<
+    NativeStackNavigationProp<MainStackParams & BottomTabParams, "progress">,
+    DrawerNavigationProp<BottomTabParams, "progress">
+  >;
+  route: RouteProp<MainStackParams & BottomTabParams, "progress">;
+};
+
+export type MessengerProps = {
+  navigation: CompositeNavigationProp<
+    NativeStackNavigationProp<MainStackParams & BottomTabParams, "messenger">,
+    DrawerNavigationProp<BottomTabParams, "messenger">
+  >;
+  route: RouteProp<MainStackParams & BottomTabParams, "messenger">;
+};

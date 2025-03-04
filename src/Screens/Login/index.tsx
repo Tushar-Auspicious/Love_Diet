@@ -94,7 +94,7 @@ const Login: FC<LoginScreenProps> = React.memo(({ navigation }) => {
   const handleContinue = useCallback(() => {
     switch (activeIndex) {
       case 0:
-        Alert.alert("In Progress");
+        // Alert.alert("In Progress");
         navigation.navigate("mainStack", {
           screen: "tabs",
           params: { screen: "dashboard" },
@@ -287,7 +287,7 @@ const Login: FC<LoginScreenProps> = React.memo(({ navigation }) => {
         style={[
           styles.container,
           {
-            paddingBottom: verticalScale(10) + insets.bottom,
+            paddingBottom: verticalScale(10),
           },
         ]}
       >

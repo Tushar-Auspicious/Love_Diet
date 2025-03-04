@@ -1,9 +1,16 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { createDrawerNavigator } from "@react-navigation/drawer";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import React from "react";
+import BottomTabBar from "../Components/BottomTabBar";
+import SideDrawer from "../Components/SideDrawer/SideDrawer";
+import Agreement from "../Screens/Agreement";
+import Dashboard from "../Screens/Dahsboard";
 import Login from "../Screens/Login";
+import Messenger from "../Screens/Messenger";
 import OnBoarding from "../Screens/OnBoarding";
 import OnBoardingPlans from "../Screens/OnBoardingPlans";
+import Progress from "../Screens/Progress";
 import SignUp from "../Screens/SignUp";
 import Welcome from "../Screens/Welcome";
 import {
@@ -12,11 +19,12 @@ import {
   MainStackParams,
   RootStackParams,
 } from "../Typings/route";
+import { wp } from "../Utilities/Metrics";
 
 const RootStack = createNativeStackNavigator<RootStackParams>();
 const Auth = createNativeStackNavigator<AuthStackParams>();
-const Main = createNativeStackNavigator<MainStackParams>();
 const Tabs = createBottomTabNavigator<BottomTabParams>();
+const Drawer = createDrawerNavigator<MainStackParams>(); // Create Drawer Navigator
 
 const Routing = () => {
   function AuthStack() {
@@ -35,64 +43,62 @@ const Routing = () => {
     );
   }
 
-  //   function TabStack() {
-  //     return (
-  //       <Tabs.Navigator
-  //         screenOptions={{
-  //           headerShown: false,
-  //         }}
-  //         tabBar={(props) => <BottomTabBar {...props} />}
-  //       >
-  //         <Tabs.Screen
-  //           options={{
-  //             title: "Dashboard",
-  //           }}
-  //           name="dashboard"
-  //           component={Home}
-  //         />
-  //         <Tabs.Screen
-  //           options={{
-  //             title: "Aggrement",
-  //           }}
-  //           name="aggrement"
-  //           component={Dating}
-  //         />
-  //         <Tabs.Screen
-  //           options={{
-  //             title: "Invite Friends",
-  //           }}
-  //           name="inviteFriends"
-  //           component={Events}
-  //         />
-  //         <Tabs.Screen
-  //           options={{
-  //             title: "Progress",
-  //           }}
-  //           name="progress"
-  //           component={Messages}
-  //         />
-  //         <Tabs.Screen
-  //           options={{
-  //             title: "Messenger",
-  //           }}
-  //           name="messenger"
-  //           component={Profile}
-  //         />
-  //       </Tabs.Navigator>
-  //     );
-  //   }
+  function TabStack() {
+    return (
+      <Tabs.Navigator
+        screenOptions={{
+          headerShown: false,
+        }}
+        tabBar={(props) => <BottomTabBar {...props} />}
+      >
+        <Tabs.Screen
+          options={{
+            title: "Dashboard",
+          }}
+          name="dashboard"
+          component={Dashboard}
+        />
+        <Tabs.Screen
+          options={{
+            title: "Aggrement",
+          }}
+          name="aggrement"
+          component={Agreement}
+        />
+        <Tabs.Screen
+          options={{
+            title: "Progress",
+          }}
+          name="progress"
+          component={Progress}
+        />
+        <Tabs.Screen
+          options={{
+            title: "Messenger",
+          }}
+          name="messenger"
+          component={Messenger}
+        />
+      </Tabs.Navigator>
+    );
+  }
 
-  //   function MainStack() {
-  //     return (
-  //       <Main.Navigator
-  //         screenOptions={{
-  //           headerShown: false,
-  //         }}
-  //       >
-  //         <Main.Screen name="tabs" component={TabStack} />
-  //       </Main.Navigator>
-  //     );
-  //   }
+  function DrawerStack() {
+    return (
+      <Drawer.Navigator
+        drawerContent={(props) => <SideDrawer {...props} />}
+        screenOptions={{
+          headerShown: false,
+          drawerStyle: {
+            width: wp(100),
+          },
+          drawerType: "slide",
+        }}
+      >
+        <Drawer.Screen name="tabs" component={TabStack} />
+      </Drawer.Navigator>
+    );
+  }
 
   return (
     <RootStack.Navigator
@@ -100,8 +106,8 @@ const Routing = () => {
         headerShown: false,
       }}
     >
+      <RootStack.Screen name="mainStack" component={DrawerStack} />
       <RootStack.Screen name="authStack" component={AuthStack} />
-      {/* <RootStack.Screen name="mainStack" component={MainStack} /> */}
     </RootStack.Navigator>
   );
 };

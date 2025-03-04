@@ -12,6 +12,17 @@ import RedDeleteIcon from "./redDeleteIcon.svg";
 import UpArrowIcon from "./UpArrow.svg";
 import DownArrowIcon from "./downArrow.svg";
 import SearchIcon from "./Search.svg";
+import DahsboardFill from "./DashboardFIll.svg";
+import DashboardIcon from "./DashboardIcon.svg";
+import ProgressFill from "./ProgressFill.svg";
+import ProgressIcon from "./ProgressIcon.svg";
+import AgreementFill from "./AgreementFill.svg";
+import AgreementIcon from "./AgreementIcon.svg";
+import MessengerFill from "./MessengerFill.svg";
+import MessengerIcon from "./MessengerIcon.svg";
+import InviteFriendIcon from "./InviteFriendIcon.svg";
+import HamburgerMenuIcon from "./hamBurgermenuIcon.svg";
+import NotificationBell from "./NotificationBell.svg";
 
 const ICONS = {
   Slide1,
@@ -28,6 +39,17 @@ const ICONS = {
   UpArrowIcon,
   DownArrowIcon,
   SearchIcon,
+  DahsboardFill,
+  DashboardIcon,
+  ProgressFill,
+  ProgressIcon,
+  AgreementFill,
+  AgreementIcon,
+  MessengerFill,
+  MessengerIcon,
+  InviteFriendIcon,
+  HamburgerMenuIcon,
+  NotificationBell,
 };
 
 export default ICONS;
