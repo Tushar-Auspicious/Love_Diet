@@ -35,6 +35,7 @@ export type MainStackParams = {
   rateUs: undefined;
   contactUs: undefined;
   notifications: undefined;
+  createAgreement: undefined;
 };
 
 export type BottomTabParams = {

@@ -20,6 +20,7 @@ import {
   RootStackParams,
 } from "../Typings/route";
 import { wp } from "../Utilities/Metrics";
+import CreateAgreement from "../Screens/CreateAgreement";
 
 const RootStack = createNativeStackNavigator<RootStackParams>();
 const Auth = createNativeStackNavigator<AuthStackParams>();
@@ -96,6 +97,7 @@ const Routing = () => {
         }}
       >
         <Drawer.Screen name="tabs" component={TabStack} />
+        <Drawer.Screen name="createAgreement" component={CreateAgreement} />
       </Drawer.Navigator>
     );
   }
